@@ -1,0 +1,50 @@
+<div class="container">
+  <header>
+    <h1>🔒 Autentiseringstestning</h1>
+    <p class="subtitle">Studie om användarupplevelse av autentiseringsmetoder</p>
+  </header>
+
+  @if (!state.testStarted && !state.testFinished) {
+    <div class="card intro-card">
+      <h2>Välkommen till testet</h2>
+      <p>
+        Du kommer att prova <strong>tre olika inloggningsmetoder</strong> i slumpmässig ordning.
+        För varje metod simuleras inloggningsprocessen så att du kan uppleva hur det känns att använda den.
+      </p>
+      <ul class="method-list">
+        @for (m of state.allMethods; track m.route) {
+          <li><span class="icon">{{ m.icon }}</span> <strong>{{ m.name }}</strong> – {{ m.description }}</li>
+        }
+      </ul>
+      <button class="btn btn-primary" (click)="startTest()">Starta testet</button>
+    </div>
+  }
+
+  @if (state.testStarted && !state.testFinished) {
+    <div class="card step-card">
+      <div class="step-indicator">
+        <span>Steg {{ state.currentIndex + 1 }} av {{ state.shuffledMethods.length }}</span>
+        <div class="dots">
+          @for (m of state.shuffledMethods; track m.route; let i = $index) {
+            <span class="dot" [class.active]="i === state.currentIndex" [class.done]="i < state.currentIndex"></span>
+          }
+        </div>
+      </div>
+      <div class="method-preview">
+        <span class="big-icon">{{ state.currentMethod.icon }}</span>
+        <h2>{{ state.currentMethod.name }}</h2>
+        <p>{{ state.currentMethod.description }}</p>
+      </div>
+      <button class="btn btn-primary" (click)="goToMethod()">Testa {{ state.currentMethod.name }}</button>
+    </div>
+  }
+
+  @if (state.testFinished) {
+    <div class="card finish-card">
+      <span class="big-icon">✅</span>
+      <h2>Testet är klart!</h2>
+      <p>Tack för att du provade alla tre inloggningsmetoderna.</p>
+      <button class="btn btn-secondary" (click)="reset()">Kör testet igen</button>
+    </div>
+  }
+</div>

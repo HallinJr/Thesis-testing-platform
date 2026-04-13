@@ -1,0 +1,54 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="method-badge">🔐 Passkey + PIN</div>
+    <p class="step-label">{{ stepLabel }}</p>
+
+    @if (step === 'select') {
+      <h2>Logga in med Passkey</h2>
+      <p class="hint">
+        En passkey är en kryptografisk nyckel lagrad på din enhet.
+        Tryck på knappen för att simulera att enheten känner igen dig.
+      </p>
+      <div class="passkey-animation">🔐</div>
+      <button class="btn btn-primary" (click)="startPasskey()">Använd Passkey</button>
+    }
+
+    @if (step === 'scanning') {
+      <div class="loading">
+        <div class="passkey-animation">🔐</div>
+        <p>Verifierar passkey på enheten…</p>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="scanProgress"></div>
+        </div>
+      </div>
+    }
+
+    @if (step === 'pin') {
+      <h2>Ange lokal PIN</h2>
+      <p class="hint">Passkey hittades! Bekräfta med din 4-siffriga PIN-kod.</p>
+      <div class="pin-boxes">
+        @for (digit of pinDigits; track digit.index) {
+          <input #pinInput type="password" inputmode="numeric" maxlength="1" [value]="digit.value"
+            (input)="onPinInput($event, digit.index)" (keydown)="onPinKeydown($event, digit.index)" />
+        }
+      </div>
+      <button class="btn btn-primary" (click)="submitPin()" [disabled]="!pinComplete">Bekräfta PIN</button>
+    }
+
+    @if (step === 'verifying') {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Verifierar PIN…</p>
+      </div>
+    }
+
+    @if (step === 'success') {
+      <div class="success">
+        <span class="big-icon">✅</span>
+        <h2>Inloggning lyckades!</h2>
+        <p>Passkey och PIN accepterades (simulerat).</p>
+        <button class="btn btn-primary" (click)="continueTest()">Fortsätt testet</button>
+      </div>
+    }
+  </div>
+</div>
