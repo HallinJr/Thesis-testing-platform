@@ -1,0 +1,63 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="method-badge">📱 Lösenord + SMS</div>
+    <p class="step-label">{{ stepLabel }}</p>
+
+    @if (step === 'password') {
+      <h2>Steg 1: Logga in</h2>
+      <p class="hint">Ange dina uppgifter. Du får sedan en SMS-kod att bekräfta.</p>
+      <form (ngSubmit)="submitPassword()">
+        <div class="field">
+          <label for="sms-username">Användarnamn</label>
+          <input id="sms-username" type="text" [(ngModel)]="username" name="username" placeholder="t.ex. anna@exempel.se" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="sms-password">Lösenord</label>
+          <div class="input-row">
+            <input id="sms-password" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" placeholder="Valfritt lösenord" autocomplete="current-password" />
+            <button type="button" class="toggle-btn" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Dölj lösenord' : 'Visa lösenord'">
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit" [disabled]="!username || !password">Skicka SMS-kod</button>
+      </form>
+    }
+
+    @if (step === 'sms-sending') {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Skickar SMS-kod…</p>
+      </div>
+    }
+
+    @if (step === 'sms-verify') {
+      <h2>Steg 2: Verifiera SMS-kod</h2>
+      <div class="sent-notice">📨 En 6-siffrig kod har skickats till ditt telefonnummer (simulerat).</div>
+      <p class="hint">Ange koden nedan. Valfria siffror fungerar i detta test.</p>
+      <div class="sms-boxes">
+        @for (digit of smsDigits; track digit.index) {
+          <input #smsInput type="text" inputmode="numeric" maxlength="1" [value]="digit.value"
+            (input)="onSmsInput($event, digit.index)" (keydown)="onSmsKeydown($event, digit.index)" />
+        }
+      </div>
+      <button class="btn btn-primary" (click)="submitSms()" [disabled]="!smsComplete">Verifiera kod</button>
+    }
+
+    @if (step === 'verifying') {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Verifierar kod…</p>
+      </div>
+    }
+
+    @if (step === 'success') {
+      <div class="success">
+        <span class="big-icon">✅</span>
+        <h2>Inloggning lyckades!</h2>
+        <p>Lösenord och SMS-kod accepterades (simulerat).</p>
+        <button class="btn btn-primary" (click)="continueTest()">Fortsätt testet</button>
+      </div>
+    }
+  </div>
+</div>
