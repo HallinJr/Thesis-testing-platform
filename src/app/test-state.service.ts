@@ -1,44 +1,146 @@
 import { Injectable } from '@angular/core';
 
-interface AuthMethod {
+export type AuthMethodKey = 'password' | 'sms' | 'passkey';
+
+export interface AuthMethod {
+  key: AuthMethodKey;
   name: string;
   description: string;
   route: string;
   icon: string;
 }
 
+export interface AttemptLog {
+  participantId: string;
+  sessionId: string;
+  methodKey: AuthMethodKey;
+  methodName: string;
+  methodOrder: number;
+  taskCompletionMs: number;
+  failedAttemptsBeforeSuccess: number;
+  completedAt: string;
+  satisfactionRating?: number;
+  easeOfUseRating?: number;
+  confidenceRating?: number;
+  feedbackComment?: string;
+}
+
+export interface SessionLog {
+  participantId: string;
+  sessionId: string;
+  startedAt: string;
+  finishedAt: string;
+  methodOrder: AuthMethodKey[];
+  attempts: AttemptLog[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class TestStateService {
   private readonly ALL_METHODS: AuthMethod[] = [
-    { name: 'Lösenord', description: 'Traditionell inloggning med användarnamn och lösenord.', route: '/password', icon: '🔑' },
-    { name: 'Lösenord + SMS', description: 'Tvåfaktorsautentisering med lösenord och SMS-kod.', route: '/sms', icon: '📱' },
-    { name: 'Passkey + PIN', description: 'Lösenordsfri inloggning med passkey och lokal PIN-kod.', route: '/passkey', icon: '🔐' }
+    { key: 'password', name: 'Single-factor (Password)', description: 'Enter the session password.', route: '/password', icon: '🔑' },
+    { key: 'sms', name: 'Two-factor (Password + OTP)', description: 'Enter password, then a one-time code.', route: '/sms', icon: '📱' },
+    { key: 'passkey', name: 'Passkey (PIN)', description: 'Enter a local 4-digit PIN for passkey simulation.', route: '/passkey', icon: '🔐' }
   ];
+  private readonly STORAGE_KEY = 'authStudyLogsV1';
 
   shuffledMethods: AuthMethod[] = [];
   currentIndex = 0;
   testStarted = false;
   testFinished = false;
+  participantId = '';
+  sessionId = '';
+  sessionPassword = '';
+  sessionPasskeyPin = '';
+
+  private firstInteractionAt: number | null = null;
+  private failedAttempts = 0;
+  private attemptsThisSession: AttemptLog[] = [];
+  private sessionStartedAt: string | null = null;
 
   get allMethods(): AuthMethod[] {
     return this.ALL_METHODS;
-  }
-
-  startTest(): void {
-    this.shuffledMethods = [...this.ALL_METHODS].sort(() => Math.random() - 0.5);
-    this.currentIndex = 0;
-    this.testStarted = true;
-    this.testFinished = false;
   }
 
   get currentMethod(): AuthMethod {
     return this.shuffledMethods[this.currentIndex];
   }
 
+  get hasActiveMethod(): boolean {
+    return this.testStarted && !!this.currentMethod;
+  }
+
+  get currentSessionAttempts(): AttemptLog[] {
+    return [...this.attemptsThisSession];
+  }
+
+  get allStoredSessions(): SessionLog[] {
+    return this.readStoredSessions();
+  }
+
+  startTest(participantId?: string, sessionPassword?: string, sessionPasskeyPin?: string): void {
+    this.participantId = participantId?.trim() || this.createParticipantId();
+    this.sessionId = this.createSessionId();
+    this.sessionPassword = sessionPassword?.trim() || this.createSessionPassword();
+    this.sessionPasskeyPin = this.normalizePin(sessionPasskeyPin) || this.createSessionPasskeyPin();
+    this.shuffledMethods = this.shuffleMethods();
+    this.currentIndex = 0;
+    this.testStarted = true;
+    this.testFinished = false;
+    this.firstInteractionAt = null;
+    this.failedAttempts = 0;
+    this.attemptsThisSession = [];
+    this.sessionStartedAt = new Date().toISOString();
+  }
+
+  beginCurrentMethod(): void {
+    this.firstInteractionAt = null;
+    this.failedAttempts = 0;
+  }
+
+  registerInteraction(): void {
+    if (!this.testStarted || this.testFinished) {
+      return;
+    }
+
+    if (this.firstInteractionAt === null) {
+      this.firstInteractionAt = Date.now();
+    }
+  }
+
+  registerFailure(): void {
+    this.registerInteraction();
+    this.failedAttempts += 1;
+  }
+
+  registerSuccess(): AttemptLog | null {
+    if (!this.hasActiveMethod) {
+      return null;
+    }
+
+    this.registerInteraction();
+    const completedAtMs = Date.now();
+    const startedAtMs = this.firstInteractionAt ?? completedAtMs;
+    const log: AttemptLog = {
+      participantId: this.participantId,
+      sessionId: this.sessionId,
+      methodKey: this.currentMethod.key,
+      methodName: this.currentMethod.name,
+      methodOrder: this.currentIndex + 1,
+      taskCompletionMs: Math.max(0, completedAtMs - startedAtMs),
+      failedAttemptsBeforeSuccess: this.failedAttempts,
+      completedAt: new Date(completedAtMs).toISOString()
+    };
+
+    this.attemptsThisSession.push(log);
+    return log;
+  }
+
   advance(): void {
     if (this.currentIndex < this.shuffledMethods.length - 1) {
       this.currentIndex++;
+      this.beginCurrentMethod();
     } else {
+      this.persistCurrentSession();
       this.testFinished = true;
       this.testStarted = false;
     }
@@ -49,5 +151,149 @@ export class TestStateService {
     this.testFinished = false;
     this.currentIndex = 0;
     this.shuffledMethods = [];
+    this.firstInteractionAt = null;
+    this.failedAttempts = 0;
+    this.attemptsThisSession = [];
+    this.participantId = '';
+    this.sessionId = '';
+    this.sessionPassword = '';
+    this.sessionPasskeyPin = '';
+    this.sessionStartedAt = null;
+  }
+
+  exportCsv(): string {
+    const sessions = this.readStoredSessions();
+    const headers = [
+      'participantId',
+      'sessionId',
+      'methodKey',
+      'methodName',
+      'methodOrder',
+      'taskCompletionMs',
+      'failedAttemptsBeforeSuccess',
+      'completedAt',
+      'satisfactionRating',
+      'easeOfUseRating',
+      'confidenceRating',
+      'feedbackComment'
+    ];
+
+    const rows = sessions.flatMap((session) =>
+      session.attempts.map((attempt) => [
+        attempt.participantId,
+        attempt.sessionId,
+        attempt.methodKey,
+        attempt.methodName,
+        attempt.methodOrder,
+        attempt.taskCompletionMs,
+        attempt.failedAttemptsBeforeSuccess,
+        attempt.completedAt,
+        attempt.satisfactionRating ?? '',
+        attempt.easeOfUseRating ?? '',
+        attempt.confidenceRating ?? '',
+        attempt.feedbackComment ?? ''
+      ])
+    );
+
+    return [headers, ...rows]
+      .map((row) => row.map((value) => this.toCsvCell(String(value))).join(','))
+      .join('\n');
+  }
+
+  exportJson(): string {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      sessions: this.readStoredSessions()
+    };
+
+    return JSON.stringify(payload, null, 2);
+  }
+
+  private shuffleMethods(): AuthMethod[] {
+    const copy = [...this.ALL_METHODS];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = temp;
+    }
+
+    return copy;
+  }
+
+  private persistCurrentSession(): void {
+    if (!this.sessionId || !this.participantId || this.attemptsThisSession.length === 0) {
+      return;
+    }
+
+    const sessions = this.readStoredSessions();
+    const sessionLog: SessionLog = {
+      participantId: this.participantId,
+      sessionId: this.sessionId,
+      startedAt: this.sessionStartedAt ?? new Date().toISOString(),
+      finishedAt: new Date().toISOString(),
+      methodOrder: this.shuffledMethods.map((method) => method.key),
+      attempts: [...this.attemptsThisSession]
+    };
+    sessions.push(sessionLog);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessions));
+  }
+
+  private readStoredSessions(): SessionLog[] {
+    const raw = localStorage.getItem(this.STORAGE_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as SessionLog[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private createParticipantId(): string {
+    return `P-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  }
+
+  private createSessionId(): string {
+    return `S-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  }
+
+  private createSessionPassword(): string {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    return Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+  }
+
+  private createSessionPasskeyPin(): string {
+    return String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+  }
+
+  private normalizePin(value?: string): string {
+    if (!value) {
+      return '';
+    }
+
+    const pin = value.replace(/\D/g, '').slice(0, 4);
+    return pin.length === 4 ? pin : '';
+  }
+
+  saveFeedbackForCurrentMethod(satisfaction: number, easeOfUse: number, confidence: number, comment?: string): boolean {
+    const latest = this.attemptsThisSession[this.attemptsThisSession.length - 1];
+    if (!latest || latest.methodKey !== this.currentMethod.key) {
+      return false;
+    }
+
+    latest.satisfactionRating = satisfaction;
+    latest.easeOfUseRating = easeOfUse;
+    latest.confidenceRating = confidence;
+    latest.feedbackComment = (comment ?? '').trim();
+    return true;
+  }
+
+  private toCsvCell(value: string): string {
+    const escaped = value.replace(/"/g, '""');
+    return `"${escaped}"`;
   }
 }

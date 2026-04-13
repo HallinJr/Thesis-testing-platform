@@ -1,94 +1,204 @@
 .container {
-  max-width: 600px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 2rem 1rem;
-  font-family: 'Segoe UI', sans-serif;
+  padding: 2rem 1rem 3rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #1f2937;
 }
 
 header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 
-  h1 { font-size: 2rem; margin-bottom: 0.25rem; }
-  .subtitle { color: #666; font-size: 1rem; }
+  h1 {
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 650;
+  }
+
+  .subtitle {
+    margin-top: 0.45rem;
+    color: #4b5563;
+  }
 }
 
 .card {
-  background: #fff;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
   border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.1);
-  padding: 2rem;
-  text-align: center;
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.06);
+  padding: 1.5rem;
+}
 
-  h2 { margin-top: 0; }
+.field {
+  text-align: left;
+  margin: 1rem 0;
+
+  label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #bcc8d8;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: #64748b;
+    }
+  }
 }
 
 .method-list {
-  text-align: left;
   list-style: none;
   padding: 0;
-  margin: 1.5rem 0;
+  margin: 1.25rem 0;
 
   li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.95rem;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: 0.5rem;
+    align-items: start;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid #edf2f7;
   }
-  .icon { margin-right: 0.5rem; }
+
+  p {
+    margin: 0.2rem 0 0;
+    color: #4b5563;
+    font-size: 0.92rem;
+  }
+
+  .icon {
+    font-size: 1.2rem;
+    line-height: 1.4;
+  }
+}
+
+.session-meta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+  }
 }
 
 .step-indicator {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+  color: #475569;
   font-size: 0.9rem;
-  color: #666;
 
   .dots {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 0.5rem;
     margin-top: 0.5rem;
   }
 
   .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #ddd;
-    transition: background 0.3s;
+    width: 11px;
+    height: 11px;
+    border-radius: 99px;
+    background: #d1d9e4;
 
-    &.active { background: #3f51b5; }
-    &.done { background: #4caf50; }
+    &.active {
+      background: #64748b;
+    }
+
+    &.done {
+      background: #16a34a;
+    }
   }
 }
 
 .method-preview {
-  margin: 1.5rem 0;
+  text-align: center;
+  margin: 1rem 0 1.2rem;
+
+  .big-icon {
+    font-size: 2.2rem;
+    display: block;
+    margin-bottom: 0.45rem;
+  }
+
+  h2 {
+    margin: 0.2rem 0;
+    font-size: 1.35rem;
+  }
+
+  p {
+    margin: 0;
+    color: #4b5563;
+  }
 }
 
-.big-icon {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 0.5rem;
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+
+  th,
+  td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.55rem 0.5rem;
+    font-size: 0.92rem;
+    text-align: left;
+  }
+
+  th {
+    font-weight: 600;
+    color: #334155;
+    background: #f8fafc;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
 }
 
 .btn {
-  display: inline-block;
-  padding: 0.75rem 2rem;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  padding: 0.72rem 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: opacity 0.2s;
-
-  &:hover { opacity: 0.85; }
+  min-width: 140px;
 
   &-primary {
-    background: #3f51b5;
-    color: #fff;
+    background: #334155;
+    color: #ffffff;
   }
 
   &-secondary {
-    background: #e0e0e0;
-    color: #333;
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  &:hover {
+    opacity: 0.92;
+  }
+}
+
+@media (max-width: 640px) {
+  .actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
   }
 }

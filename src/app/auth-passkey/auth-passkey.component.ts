@@ -1,12 +1,10 @@
-import { Component, OnDestroy, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TestStateService } from '../test-state.service';
 
-type Step = 'select' | 'scanning' | 'pin' | 'verifying' | 'success';
-
-interface Digit { index: number; value: string; }
+type Step = 'select' | 'pin' | 'verifying' | 'success';
 
 @Component({
   selector: 'app-auth-passkey',
@@ -15,68 +13,105 @@ interface Digit { index: number; value: string; }
   templateUrl: './auth-passkey.component.html',
   styleUrl: './auth-passkey.component.scss'
 })
-export class AuthPasskeyComponent implements OnDestroy {
-  @ViewChildren('pinInput') pinInputs!: QueryList<ElementRef<HTMLInputElement>>;
+export class AuthPasskeyComponent implements OnInit, OnDestroy {
+  @ViewChild('pinInput') pinInput?: ElementRef<HTMLInputElement>;
 
-  pinDigits: Digit[] = Array.from({ length: 4 }, (_, i) => ({ index: i, value: '' }));
+  pinCode = '';
   step: Step = 'select';
-  scanProgress = 0;
-  private scanTimer: ReturnType<typeof setInterval> | null = null;
+  private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
+  validationMessage = '';
 
   constructor(private router: Router, public state: TestStateService) {}
 
   get stepLabel(): string {
-    return `Steg ${this.state.currentIndex + 1} av ${this.state.shuffledMethods.length}`;
+    return `Method ${this.state.currentIndex + 1} of ${this.state.shuffledMethods.length}`;
+  }
+
+  ngOnInit(): void {
+    if (!this.state.hasActiveMethod || this.state.currentMethod.key !== 'passkey') {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    this.state.beginCurrentMethod();
   }
 
   startPasskey(): void {
-    this.step = 'scanning';
-    this.scanProgress = 0;
-    this.scanTimer = setInterval(() => {
-      this.scanProgress += 5;
-      if (this.scanProgress >= 100) {
-        if (this.scanTimer) clearInterval(this.scanTimer);
-        this.step = 'pin';
-      }
-    }, 80);
+    this.state.registerInteraction();
+    this.validationMessage = '';
+    this.pinCode = '';
+    this.step = 'pin';
+    this.focusFirstPinInput();
   }
 
-  onPinInput(event: Event, index: number): void {
+  onPinInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const val = input.value.replace(/\D/g, '').slice(-1);
-    this.pinDigits[index].value = val;
-    input.value = val;
-    if (val && index < 3) {
-      const next = this.pinInputs.toArray()[index + 1];
-      next?.nativeElement.focus();
-    }
+    this.onPinChange(input.value);
   }
 
-  onPinKeydown(event: KeyboardEvent, index: number): void {
-    if (event.key === 'Backspace' && !this.pinDigits[index].value && index > 0) {
-      const prev = this.pinInputs.toArray()[index - 1];
-      prev?.nativeElement.focus();
-    }
+  onPinChange(value: string): void {
+    const val = value.replace(/\D/g, '').slice(0, 4);
+    this.state.registerInteraction();
+    this.pinCode = val;
   }
 
   get pinComplete(): boolean {
-    return this.pinDigits.every(d => d.value.length === 1);
+    return this.pinCode.length === 4;
+  }
+
+  get enteredPin(): string {
+    return this.pinCode;
   }
 
   submitPin(): void {
-    if (!this.pinComplete) return;
+    this.state.registerInteraction();
+    this.validationMessage = '';
+
+    if (!this.pinComplete) {
+      this.state.registerFailure();
+      this.validationMessage = 'Enter all 4 PIN digits to continue.';
+      return;
+    }
+
+    if (this.enteredPin !== this.state.sessionPasskeyPin) {
+      this.state.registerFailure();
+      this.validationMessage = 'That PIN does not match the passkey PIN from session setup.';
+      return;
+    }
+
     this.step = 'verifying';
-    setTimeout(() => { this.step = 'success'; }, 1500);
+    setTimeout(() => {
+      this.state.registerSuccess();
+      this.step = 'success';
+      this.startAutoAdvance();
+    }, 700);
   }
 
   continueTest(): void {
     this.router.navigate(['/'], { queryParams: { advance: 'true' } });
   }
 
+  private focusFirstPinInput(): void {
+    setTimeout(() => {
+      this.pinInput?.nativeElement.focus();
+    }, 0);
+  }
+
+  private startAutoAdvance(): void {
+    if (this.autoAdvanceTimer) {
+      clearTimeout(this.autoAdvanceTimer);
+      this.autoAdvanceTimer = null;
+    }
+
+    this.autoAdvanceTimer = setTimeout(() => {
+      this.continueTest();
+    }, 900);
+  }
+
   ngOnDestroy(): void {
-    if (this.scanTimer) {
-      clearInterval(this.scanTimer);
-      this.scanTimer = null;
+    if (this.autoAdvanceTimer) {
+      clearTimeout(this.autoAdvanceTimer);
+      this.autoAdvanceTimer = null;
     }
   }
 }
