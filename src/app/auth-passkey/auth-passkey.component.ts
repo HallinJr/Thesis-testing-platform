@@ -1,4 +1,4 @@
-import { Component, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, OnDestroy, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -15,7 +15,7 @@ interface Digit { index: number; value: string; }
   templateUrl: './auth-passkey.component.html',
   styleUrl: './auth-passkey.component.scss'
 })
-export class AuthPasskeyComponent {
+export class AuthPasskeyComponent implements OnDestroy {
   @ViewChildren('pinInput') pinInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   pinDigits: Digit[] = Array.from({ length: 4 }, (_, i) => ({ index: i, value: '' }));
@@ -71,5 +71,12 @@ export class AuthPasskeyComponent {
 
   continueTest(): void {
     this.router.navigate(['/'], { queryParams: { advance: 'true' } });
+  }
+
+  ngOnDestroy(): void {
+    if (this.scanTimer) {
+      clearInterval(this.scanTimer);
+      this.scanTimer = null;
+    }
   }
 }
