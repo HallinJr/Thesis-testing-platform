@@ -18,11 +18,6 @@ export class AuthPasswordComponent implements OnInit, OnDestroy {
   step: Step = 'form';
   showPassword = false;
   validationMessage = '';
-  feedbackValidationMessage = '';
-  satisfactionRating = 0;
-  easeOfUseRating = 0;
-  confidenceRating = 0;
-  feedbackComment = '';
   private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private router: Router, public state: TestStateService) {}

@@ -12,25 +12,13 @@ export interface AuthMethod {
 
 export interface AttemptLog {
   participantId: string;
-  sessionId: string;
-  methodKey: AuthMethodKey;
   methodName: string;
-  methodOrder: number;
-  taskCompletionMs: number;
-  failedAttemptsBeforeSuccess: number;
-  completedAt: string;
-  satisfactionRating?: number;
-  easeOfUseRating?: number;
-  confidenceRating?: number;
-  feedbackComment?: string;
+  completionTimeMs: number;
+  attempts: number;
 }
 
 export interface SessionLog {
-  participantId: string;
-  sessionId: string;
-  startedAt: string;
-  finishedAt: string;
-  methodOrder: AuthMethodKey[];
+  savedAt: string;
   attempts: AttemptLog[];
 }
 
@@ -122,13 +110,9 @@ export class TestStateService {
     const startedAtMs = this.firstInteractionAt ?? completedAtMs;
     const log: AttemptLog = {
       participantId: this.participantId,
-      sessionId: this.sessionId,
-      methodKey: this.currentMethod.key,
       methodName: this.currentMethod.name,
-      methodOrder: this.currentIndex + 1,
-      taskCompletionMs: Math.max(0, completedAtMs - startedAtMs),
-      failedAttemptsBeforeSuccess: this.failedAttempts,
-      completedAt: new Date(completedAtMs).toISOString()
+      completionTimeMs: Math.max(0, completedAtMs - startedAtMs),
+      attempts: this.failedAttempts + 1
     };
 
     this.attemptsThisSession.push(log);
@@ -165,33 +149,17 @@ export class TestStateService {
     const sessions = this.readStoredSessions();
     const headers = [
       'participantId',
-      'sessionId',
-      'methodKey',
       'methodName',
-      'methodOrder',
-      'taskCompletionMs',
-      'failedAttemptsBeforeSuccess',
-      'completedAt',
-      'satisfactionRating',
-      'easeOfUseRating',
-      'confidenceRating',
-      'feedbackComment'
+      'completionTimeMs',
+      'attempts'
     ];
 
     const rows = sessions.flatMap((session) =>
       session.attempts.map((attempt) => [
         attempt.participantId,
-        attempt.sessionId,
-        attempt.methodKey,
         attempt.methodName,
-        attempt.methodOrder,
-        attempt.taskCompletionMs,
-        attempt.failedAttemptsBeforeSuccess,
-        attempt.completedAt,
-        attempt.satisfactionRating ?? '',
-        attempt.easeOfUseRating ?? '',
-        attempt.confidenceRating ?? '',
-        attempt.feedbackComment ?? ''
+        attempt.completionTimeMs,
+        attempt.attempts
       ])
     );
 
@@ -201,12 +169,18 @@ export class TestStateService {
   }
 
   exportJson(): string {
+    const logs = this.readStoredSessions().flatMap((session) => session.attempts);
     const payload = {
       exportedAt: new Date().toISOString(),
-      sessions: this.readStoredSessions()
+      logs
     };
 
     return JSON.stringify(payload, null, 2);
+  }
+
+  clearStoredData(): void {
+    localStorage.removeItem(this.STORAGE_KEY);
+    sessionStorage.removeItem(this.STORAGE_KEY);
   }
 
   private shuffleMethods(): AuthMethod[] {
@@ -222,17 +196,13 @@ export class TestStateService {
   }
 
   private persistCurrentSession(): void {
-    if (!this.sessionId || !this.participantId || this.attemptsThisSession.length === 0) {
+    if (!this.participantId || this.attemptsThisSession.length === 0) {
       return;
     }
 
     const sessions = this.readStoredSessions();
     const sessionLog: SessionLog = {
-      participantId: this.participantId,
-      sessionId: this.sessionId,
-      startedAt: this.sessionStartedAt ?? new Date().toISOString(),
-      finishedAt: new Date().toISOString(),
-      methodOrder: this.shuffledMethods.map((method) => method.key),
+      savedAt: new Date().toISOString(),
       attempts: [...this.attemptsThisSession]
     };
     sessions.push(sessionLog);
@@ -277,19 +247,6 @@ export class TestStateService {
 
     const pin = value.replace(/\D/g, '').slice(0, 4);
     return pin.length === 4 ? pin : '';
-  }
-
-  saveFeedbackForCurrentMethod(satisfaction: number, easeOfUse: number, confidence: number, comment?: string): boolean {
-    const latest = this.attemptsThisSession[this.attemptsThisSession.length - 1];
-    if (!latest || latest.methodKey !== this.currentMethod.key) {
-      return false;
-    }
-
-    latest.satisfactionRating = satisfaction;
-    latest.easeOfUseRating = easeOfUse;
-    latest.confidenceRating = confidence;
-    latest.feedbackComment = (comment ?? '').trim();
-    return true;
   }
 
   private toCsvCell(value: string): string {

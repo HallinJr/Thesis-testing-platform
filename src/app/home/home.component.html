@@ -50,6 +50,18 @@
         />
       </div>
 
+      <div class="field">
+        <label for="clearStorageOnStart">
+          <input
+            id="clearStorageOnStart"
+            type="checkbox"
+            [(ngModel)]="clearStorageOnStart"
+            name="clearStorageOnStart"
+          />
+          Clear previously saved data when starting this session
+        </label>
+      </div>
+
       <ul class="method-list">
         @for (m of state.allMethods; track m.route) {
           <li>
@@ -62,6 +74,7 @@
         }
       </ul>
 
+      <button class="btn btn-secondary" type="button" (click)="clearStoredDataNow()">Clear Local Storage</button>
       <button class="btn btn-primary" (click)="startTest()">Start Session</button>
     </section>
   }
@@ -109,19 +122,19 @@
       <table class="results-table">
         <thead>
           <tr>
-            <th>Order</th>
+            <th>Participant ID</th>
             <th>Method</th>
             <th>Completion Time (ms)</th>
-            <th>Failed Attempts</th>
+            <th>Attempts</th>
           </tr>
         </thead>
         <tbody>
-          @for (attempt of state.currentSessionAttempts; track attempt.methodKey) {
+          @for (attempt of state.currentSessionAttempts; track $index) {
             <tr>
-              <td>{{ attempt.methodOrder }}</td>
+              <td>{{ attempt.participantId }}</td>
               <td>{{ attempt.methodName }}</td>
-              <td>{{ attempt.taskCompletionMs }}</td>
-              <td>{{ attempt.failedAttemptsBeforeSuccess }}</td>
+              <td>{{ attempt.completionTimeMs }}</td>
+              <td>{{ attempt.attempts }}</td>
             </tr>
           }
         </tbody>

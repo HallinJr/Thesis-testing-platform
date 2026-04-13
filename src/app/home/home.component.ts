@@ -14,6 +14,7 @@ export class HomeComponent implements OnInit {
   participantIdInput = '';
   sessionPasswordInput = '';
   sessionPasskeyPinInput = '';
+  clearStorageOnStart = false;
   private jsonFileHandle: any | null = null;
 
   constructor(public state: TestStateService, private router: Router, private route: ActivatedRoute) {}
@@ -27,8 +28,16 @@ export class HomeComponent implements OnInit {
   }
 
   startTest(): void {
+    if (this.clearStorageOnStart) {
+      this.state.clearStoredData();
+    }
+
     this.state.startTest(this.participantIdInput, this.sessionPasswordInput, this.sessionPasskeyPinInput);
     this.state.beginCurrentMethod();
+  }
+
+  clearStoredDataNow(): void {
+    this.state.clearStoredData();
   }
 
   goToMethod(): void {
