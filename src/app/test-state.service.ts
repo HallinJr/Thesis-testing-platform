@@ -16,6 +16,7 @@ export interface AttemptLog {
   completionTimeMs: number;
   attempts: number;
   sus?: SUSResponse;
+  susScore?: number;
 }
 
 export interface SUSResponse {
@@ -135,7 +136,9 @@ export class TestStateService {
 
   saveSUSResponseForCurrentMethod(sus: SUSResponse): void {
     if (this.attemptsThisSession.length > 0) {
-      this.attemptsThisSession[this.attemptsThisSession.length - 1].sus = sus;
+      const currentAttempt = this.attemptsThisSession[this.attemptsThisSession.length - 1];
+      currentAttempt.sus = sus;
+      currentAttempt.susScore = this.calculateSusScore(sus);
     }
   }
 
@@ -166,7 +169,7 @@ export class TestStateService {
   }
 
   exportCsv(): string {
-    const susHeaders = ['SUS_Q1', 'SUS_Q2', 'SUS_Q3', 'SUS_Q4', 'SUS_Q5', 'SUS_Q6', 'SUS_Q7', 'SUS_Q8', 'SUS_Q9', 'SUS_Q10'];
+    const susHeaders = ['SUS_Q1', 'SUS_Q2', 'SUS_Q3', 'SUS_Q4', 'SUS_Q5', 'SUS_Q6', 'SUS_Q7', 'SUS_Q8', 'SUS_Q9', 'SUS_Q10', 'SUS_Score'];
     const headers = [
       'participantId',
       'methodName',
@@ -188,8 +191,9 @@ export class TestStateService {
           attempt.sus.q7,
           attempt.sus.q8,
           attempt.sus.q9,
-          attempt.sus.q10
-        ] : Array(10).fill('');
+          attempt.sus.q10,
+          attempt.susScore ?? this.calculateSusScore(attempt.sus)
+        ] : Array(11).fill('');
         
         return [
           attempt.participantId,
@@ -293,5 +297,11 @@ export class TestStateService {
   private toCsvCell(value: string): string {
     const escaped = value.replace(/"/g, '""');
     return `"${escaped}"`;
+  }
+
+  private calculateSusScore(sus: SUSResponse): number {
+    const oddScore = (sus.q1 - 1) + (sus.q3 - 1) + (sus.q5 - 1) + (sus.q7 - 1) + (sus.q9 - 1);
+    const evenScore = (5 - sus.q2) + (5 - sus.q4) + (5 - sus.q6) + (5 - sus.q8) + (5 - sus.q10);
+    return Number(((oddScore + evenScore) * 2.5).toFixed(1));
   }
 }

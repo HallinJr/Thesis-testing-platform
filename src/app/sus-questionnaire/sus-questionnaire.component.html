@@ -1,0 +1,28 @@
+<div class="sus-section">
+  <h2>System Usability Scale (SUS)</h2>
+  <p class="sus-instructions">
+    Please rate your experience with this authentication method. For each statement, indicate your level of agreement on the scale from "Strongly Disagree" (1) to "Strongly Agree" (5).
+  </p>
+
+  <div class="sus-form">
+    @for (question of questions; track question.key; let index = $index) {
+      <div class="sus-question">
+        <label>{{ index + 1 }}. {{ question.text }}</label>
+        <div class="sus-scale">
+          @for (val of scaleValues; track val) {
+            <label class="sus-radio">
+              <input type="radio" [(ngModel)]="susResponses[question.key]" [value]="val" [name]="question.key" />
+              <span>{{ val }}</span>
+            </label>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (validationMessage) {
+    <div class="validation-error">{{ validationMessage }}</div>
+  }
+
+  <button class="btn btn-primary" (click)="submit()">Submit SUS Questionnaire</button>
+</div>

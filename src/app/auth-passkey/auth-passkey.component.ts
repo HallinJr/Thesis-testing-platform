@@ -3,13 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TestStateService, SUSResponse } from '../test-state.service';
+import { SusQuestionnaireComponent } from '../sus-questionnaire/sus-questionnaire.component';
 
 type Step = 'select' | 'pin' | 'verifying' | 'success' | 'sus';
 
 @Component({
   selector: 'app-auth-passkey',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, SusQuestionnaireComponent],
   templateUrl: './auth-passkey.component.html',
   styleUrl: './auth-passkey.component.scss'
 })
@@ -23,8 +24,6 @@ export class AuthPasskeyComponent implements OnInit, OnDestroy {
   
   private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
   validationMessage = '';
-  susResponses: SUSResponse = { q1: 0, q2: 0, q3: 0, q4: 0, q5: 0, q6: 0, q7: 0, q8: 0, q9: 0, q10: 0 };
-  susValidation = '';
 
   get stepLabel(): string {
     return `Method ${this.state.currentIndex + 1} of ${this.state.shuffledMethods.length}`;
@@ -98,16 +97,8 @@ export class AuthPasskeyComponent implements OnInit, OnDestroy {
     this.router.navigate(['/'], { queryParams: { advance: 'true' } });
   }
 
-  submitSUS(): void {
-    this.susValidation = '';
-    const allAnswered = Object.values(this.susResponses).every(v => v > 0);
-    
-    if (!allAnswered) {
-      this.susValidation = 'Please answer all SUS questions to continue.';
-      return;
-    }
-
-    this.state.saveSUSResponseForCurrentMethod(this.susResponses);
+  submitSUS(sus: SUSResponse): void {
+    this.state.saveSUSResponseForCurrentMethod(sus);
     this.router.navigate(['/'], { queryParams: { advance: 'true' } });
   }
 

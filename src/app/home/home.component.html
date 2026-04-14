@@ -126,6 +126,7 @@
             <th>Method</th>
             <th>Completion Time (ms)</th>
             <th>Attempts</th>
+            <th>SUS Score</th>
           </tr>
         </thead>
         <tbody>
@@ -135,6 +136,7 @@
               <td>{{ attempt.methodName }}</td>
               <td>{{ attempt.completionTimeMs }}</td>
               <td>{{ attempt.attempts }}</td>
+              <td>{{ attempt.susScore ?? '-' }}</td>
             </tr>
           }
         </tbody>
