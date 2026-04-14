@@ -26,7 +26,7 @@ export class AuthPasskeyComponent implements OnInit, OnDestroy {
   validationMessage = '';
 
   get stepLabel(): string {
-    return `Method ${this.state.currentIndex + 1} of ${this.state.shuffledMethods.length}`;
+    return `Metod ${this.state.currentIndex + 1} av ${this.state.shuffledMethods.length}`;
   }
 
   ngOnInit(): void {
@@ -71,13 +71,13 @@ export class AuthPasskeyComponent implements OnInit, OnDestroy {
 
     if (!this.pinComplete) {
       this.state.registerFailure();
-      this.validationMessage = 'Enter all 4 PIN digits to continue.';
+      this.validationMessage = 'Ange alla 4 PIN-siffror för att fortsätta.';
       return;
     }
 
     if (this.enteredPin !== this.state.sessionPasskeyPin) {
       this.state.registerFailure();
-      this.validationMessage = 'That PIN does not match the passkey PIN from session setup.';
+      this.validationMessage = 'PIN-koden stämmer inte med passkey-PIN från sessionsinställningarna.';
       return;
     }
 

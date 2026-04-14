@@ -24,11 +24,11 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
   otcCode = '';
   step: Step = 'password';
   validationMessage = '';
-  displayedOtp = '739241';
+  displayedOtp = '';
   private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
 
   get stepLabel(): string {
-    return `Method ${this.state.currentIndex + 1} of ${this.state.shuffledMethods.length}`;
+    return `Metod ${this.state.currentIndex + 1} av ${this.state.shuffledMethods.length}`;
   }
 
   ngOnInit(): void {
@@ -38,6 +38,7 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
     }
 
     this.state.beginCurrentMethod();
+    this.displayedOtp = this.generateOtp();
   }
 
   submitPassword(): void {
@@ -46,16 +47,18 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
 
     if (this.password.trim().length < 1) {
       this.state.registerFailure();
-      this.validationMessage = 'Enter the session password to continue.';
+      this.validationMessage = 'Ange sessionslösenordet för att fortsätta.';
       return;
     }
 
     if (this.password !== this.state.sessionPassword) {
       this.state.registerFailure();
-      this.validationMessage = 'That password does not match the session password.';
+      this.validationMessage = 'Lösenordet stämmer inte med sessionslösenordet.';
       return;
     }
 
+    this.otcCode = '';
+    this.displayedOtp = this.generateOtp();
     this.step = 'sms-verify';
     setTimeout(() => this.otcInput?.nativeElement?.focus(), 0);
   }
@@ -78,7 +81,13 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
 
     if (!this.smsComplete) {
       this.state.registerFailure();
-      this.validationMessage = 'Enter the 6-digit OTC code to continue.';
+      this.validationMessage = 'Ange den 6-siffriga engångskoden för att fortsätta.';
+      return;
+    }
+
+    if (this.otcCode !== this.displayedOtp) {
+      this.state.registerFailure();
+      this.validationMessage = 'Engångskoden är felaktig. Försök igen.';
       return;
     }
 
@@ -114,5 +123,9 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
       clearTimeout(this.autoAdvanceTimer);
       this.autoAdvanceTimer = null;
     }
+  }
+
+  private generateOtp(): string {
+    return String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
   }
 }

@@ -1,17 +1,17 @@
 <div class="auth-container">
   <div class="auth-card">
-    <div class="method-badge">📱 Two-factor (Password + OTP)</div>
+    <div class="method-badge">📱 Tvåfaktor (Lösenord + engångskod)</div>
     <p class="step-label">{{ stepLabel }}</p>
 
     @if (step === 'password') {
-      <h2>Step 1: Password</h2>
-      <p class="hint">Use the session password that was chosen at the start of the study.</p>
+      <h2>Steg 1: Lösenord</h2>
+      <p class="hint">Använd sessionslösenordet som valdes i början av studien.</p>
       <form (ngSubmit)="submitPassword()">
         <div class="field">
-          <label for="sms-password">Password</label>
+          <label for="sms-password">Lösenord</label>
           <div class="input-row">
-            <input id="sms-password" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" (input)="state.registerInteraction()" name="password" placeholder="Session password" autocomplete="current-password" />
-            <button type="button" class="toggle-btn" (click)="showPassword = !showPassword; state.registerInteraction()" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            <input id="sms-password" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" (input)="state.registerInteraction()" name="password" placeholder="Sessionslösenord" autocomplete="current-password" />
+            <button type="button" class="toggle-btn" (click)="showPassword = !showPassword; state.registerInteraction()" [attr.aria-label]="showPassword ? 'Dölj lösenord' : 'Visa lösenord'">
               {{ showPassword ? '🙈' : '👁️' }}
             </button>
           </div>
@@ -19,18 +19,18 @@
         @if (validationMessage) {
           <p class="error-msg">{{ validationMessage }}</p>
         }
-        <button class="btn btn-primary" type="submit">Show OTP</button>
+        <button class="btn btn-primary" type="submit">Visa engångskod</button>
       </form>
     }
 
     @if (step === 'sms-verify') {
       <div class="otp-modal-backdrop">
-        <div class="otp-modal" role="dialog" aria-modal="true" aria-label="One-time code popup">
-          <h2>One-Time Code (OTC)</h2>
-          <div class="sent-notice">Displayed OTC (simulation): <strong>{{ displayedOtp }}</strong></div>
-          <p class="hint">Enter the 6-digit code in the field below.</p>
+        <div class="otp-modal" role="dialog" aria-modal="true" aria-label="Popup för engångskod">
+          <h2>Engångskod</h2>
+          <div class="sent-notice">Visad engångskod (simulering): <strong>{{ displayedOtp }}</strong></div>
+          <p class="hint">Ange den 6-siffriga koden i fältet nedan.</p>
           <div class="field">
-            <label for="otc-code">OTC code</label>
+            <label for="otc-code">Engångskod</label>
             <input
               #otcInput
               id="otc-code"
@@ -39,14 +39,14 @@
               maxlength="6"
               [value]="otcCode"
               (input)="onOtcInput($event)"
-              placeholder="Enter 6 digits"
+              placeholder="Ange 6 siffror"
               autocomplete="one-time-code"
             />
           </div>
           @if (validationMessage) {
             <p class="error-msg">{{ validationMessage }}</p>
           }
-          <button class="btn btn-primary" (click)="submitSms()">Verify Code</button>
+          <button class="btn btn-primary" (click)="submitSms()">Verifiera kod</button>
         </div>
       </div>
     }
@@ -54,15 +54,15 @@
     @if (step === 'verifying') {
       <div class="loading">
         <div class="spinner"></div>
-        <p>Verifying...</p>
+        <p>Verifierar...</p>
       </div>
     }
 
     @if (step === 'success') {
       <div class="success">
         <span class="big-icon">✅</span>
-        <h2>Success</h2>
-        <p>Password and OTP accepted (simulation).</p>
+        <h2>Klart</h2>
+        <p>Lösenord och engångskod godkända (simulering).</p>
       </div>
     }
 

@@ -71,7 +71,7 @@ export class HomeComponent implements OnInit {
           suggestedName: 'study-data.json',
           types: [
             {
-              description: 'JSON Files',
+              description: 'JSON-filer',
               accept: { 'application/json': ['.json'] }
             }
           ]

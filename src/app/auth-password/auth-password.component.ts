@@ -25,7 +25,7 @@ export class AuthPasswordComponent implements OnInit, OnDestroy {
   private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
 
   get stepLabel(): string {
-    return `Method ${this.state.currentIndex + 1} of ${this.state.shuffledMethods.length}`;
+    return `Metod ${this.state.currentIndex + 1} av ${this.state.shuffledMethods.length}`;
   }
 
   ngOnInit(): void {
@@ -43,13 +43,13 @@ export class AuthPasswordComponent implements OnInit, OnDestroy {
 
     if (this.password.trim().length < 1) {
       this.state.registerFailure();
-      this.validationMessage = 'Enter the session password to continue.';
+      this.validationMessage = 'Ange sessionslösenordet för att fortsätta.';
       return;
     }
 
     if (this.password !== this.state.sessionPassword) {
       this.state.registerFailure();
-      this.validationMessage = 'That password does not match the session password.';
+      this.validationMessage = 'Lösenordet stämmer inte med sessionslösenordet.';
       return;
     }
 

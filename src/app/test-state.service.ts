@@ -40,9 +40,9 @@ export interface SessionLog {
 @Injectable({ providedIn: 'root' })
 export class TestStateService {
   private readonly ALL_METHODS: AuthMethod[] = [
-    { key: 'password', name: 'Single-factor (Password)', description: 'Enter the session password.', route: '/password', icon: '🔑' },
-    { key: 'sms', name: 'Two-factor (Password + OTP)', description: 'Enter password, then a one-time code.', route: '/sms', icon: '📱' },
-    { key: 'passkey', name: 'Passkey (PIN)', description: 'Enter a local 4-digit PIN for passkey simulation.', route: '/passkey', icon: '🔐' }
+    { key: 'password', name: 'Enfaktor (Lösenord)', description: 'Ange sessionslösenordet.', route: '/password', icon: '🔑' },
+    { key: 'sms', name: 'Tvåfaktor (Lösenord + engångskod)', description: 'Ange lösenord och därefter en engångskod.', route: '/sms', icon: '📱' },
+    { key: 'passkey', name: 'Passkey (PIN-kod)', description: 'Ange en lokal 4-siffrig PIN-kod för passkey-simulering.', route: '/passkey', icon: '🔐' }
   ];
   private readonly STORAGE_KEY = 'authStudyLogsV1';
 

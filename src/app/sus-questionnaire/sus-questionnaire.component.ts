@@ -36,7 +36,7 @@ export class SusQuestionnaireComponent {
     const allAnswered = Object.values(this.susResponses).every((value) => value > 0);
 
     if (!allAnswered) {
-      this.validationMessage = 'Please answer all SUS questions to continue.';
+      this.validationMessage = 'Besvara alla SUS-frågor för att fortsätta.';
       return;
     }
 

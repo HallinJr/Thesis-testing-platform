@@ -1,43 +1,43 @@
 <div class="container">
   <header>
-    <h1>Authentication Testing Platform</h1>
-    <p class="subtitle">Measurement-only simulation for a within-subjects study</p>
+    <h1>Testplattform för autentisering</h1>
+    <p class="subtitle">Mätsimulering för en inomgruppsstudie</p>
   </header>
 
   @if (!state.testStarted && !state.testFinished) {
     <section class="card intro-card">
-      <h2>Session Setup</h2>
+      <h2>Sessionsinställningar</h2>
       <p>
-        Each participant completes all three authentication methods once.
-        The method order is randomized for each session.
+        Varje deltagare genomför alla tre autentiseringsmetoder en gång.
+        Metodordningen slumpas för varje session.
       </p>
 
       <div class="field">
-        <label for="participantId">Participant ID (optional)</label>
+        <label for="participantId">Deltagar-ID</label>
         <input
           id="participantId"
           type="text"
           [(ngModel)]="participantIdInput"
           name="participantId"
-          placeholder="Example: P-017"
+          placeholder="Exempel: Testare-1"
           autocomplete="off"
         />
       </div>
 
       <div class="field">
-        <label for="sessionPassword">Session password</label>
+        <label for="sessionPassword">Sessionslösenord</label>
         <input
           id="sessionPassword"
           type="text"
           [(ngModel)]="sessionPasswordInput"
           name="sessionPassword"
-          placeholder="Choose the password used in the tasks"
+          placeholder="Välj lösenordet som ska användas i uppgifterna"
           autocomplete="off"
         />
       </div>
 
       <div class="field">
-        <label for="sessionPasskeyPin">Passkey PIN (4 digits)</label>
+        <label for="sessionPasskeyPin">Passkey-PIN (4 siffror)</label>
         <input
           id="sessionPasskeyPin"
           type="text"
@@ -45,12 +45,12 @@
           name="sessionPasskeyPin"
           maxlength="4"
           inputmode="numeric"
-          placeholder="Choose a 4-digit passkey PIN"
+          placeholder="Välj en 4-siffrig passkey-PIN"
           autocomplete="off"
         />
       </div>
 
-      <div class="field">
+      <!-- <div class="field">
         <label for="clearStorageOnStart">
           <input
             id="clearStorageOnStart"
@@ -60,7 +60,7 @@
           />
           Clear previously saved data when starting this session
         </label>
-      </div>
+      </div> -->
 
       <ul class="method-list">
         @for (m of state.allMethods; track m.route) {
@@ -74,22 +74,22 @@
         }
       </ul>
 
-      <button class="btn btn-secondary" type="button" (click)="clearStoredDataNow()">Clear Local Storage</button>
-      <button class="btn btn-primary" (click)="startTest()">Start Session</button>
+      <button class="btn btn-secondary" type="button" (click)="clearStoredDataNow()">Rensa lokal lagring</button>
+      <button class="btn btn-primary" (click)="startTest()">Starta session</button>
     </section>
   }
 
   @if (state.testStarted && !state.testFinished) {
     <section class="card step-card">
       <div class="session-meta">
-        <p><strong>Participant:</strong> {{ state.participantId }}</p>
+        <p><strong>Deltagare:</strong> {{ state.participantId }}</p>
         <p><strong>Session:</strong> {{ state.sessionId }}</p>
-        <p><strong>Session password:</strong> {{ state.sessionPassword }}</p>
-        <p><strong>Passkey PIN:</strong> {{ state.sessionPasskeyPin }}</p>
+        <p><strong>Sessionslösenord:</strong> {{ state.sessionPassword }}</p>
+        <p><strong>Passkey-PIN:</strong> {{ state.sessionPasskeyPin }}</p>
       </div>
 
       <div class="step-indicator">
-        <span>Method {{ state.currentIndex + 1 }} of {{ state.shuffledMethods.length }}</span>
+        <span>Metod {{ state.currentIndex + 1 }} av {{ state.shuffledMethods.length }}</span>
         <div class="dots">
           @for (m of state.shuffledMethods; track m.route; let i = $index) {
             <span class="dot" [class.active]="i === state.currentIndex" [class.done]="i < state.currentIndex"></span>
@@ -103,30 +103,30 @@
         <p>{{ state.currentMethod.description }}</p>
       </div>
 
-      <button class="btn btn-primary" (click)="goToMethod()">Start Method</button>
+      <button class="btn btn-primary" (click)="goToMethod()">Starta metod</button>
     </section>
   }
 
   @if (state.testFinished) {
     <section class="card finish-card">
-      <h2>Session Complete</h2>
-      <p>All three methods were completed and logged.</p>
+      <h2>Session slutförd</h2>
+      <p>Alla tre metoder är genomförda och loggade.</p>
 
       <div class="session-meta">
-        <p><strong>Participant:</strong> {{ state.participantId }}</p>
+        <p><strong>Deltagare:</strong> {{ state.participantId }}</p>
         <p><strong>Session:</strong> {{ state.sessionId }}</p>
-        <p><strong>Session password:</strong> {{ state.sessionPassword }}</p>
-        <p><strong>Passkey PIN:</strong> {{ state.sessionPasskeyPin }}</p>
+        <p><strong>Sessionslösenord:</strong> {{ state.sessionPassword }}</p>
+        <p><strong>Passkey-PIN:</strong> {{ state.sessionPasskeyPin }}</p>
       </div>
 
       <table class="results-table">
         <thead>
           <tr>
-            <th>Participant ID</th>
-            <th>Method</th>
-            <th>Completion Time (ms)</th>
-            <th>Attempts</th>
-            <th>SUS Score</th>
+            <th>Deltagar-ID</th>
+            <th>Metod</th>
+            <th>Genomförandetid (ms)</th>
+            <th>Försök</th>
+            <th>SUS-poäng</th>
           </tr>
         </thead>
         <tbody>
@@ -143,9 +143,9 @@
       </table>
 
       <div class="actions">
-        <button class="btn btn-secondary" (click)="downloadCsv()">Export CSV</button>
-        <button class="btn btn-secondary" (click)="downloadJson()">Export JSON (save file)</button>
-        <button class="btn btn-primary" (click)="reset()">Start New Session</button>
+        <button class="btn btn-secondary" (click)="downloadCsv()">Exportera CSV</button>
+        <button class="btn btn-secondary" (click)="downloadJson()">Exportera JSON (spara fil)</button>
+        <button class="btn btn-primary" (click)="reset()">Starta ny session</button>
       </div>
     </section>
   }
