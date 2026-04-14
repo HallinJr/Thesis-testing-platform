@@ -1,10 +1,10 @@
-import { Component, ViewChild, ElementRef, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ViewChild, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TestStateService } from '../test-state.service';
+import { TestStateService, SUSResponse } from '../test-state.service';
 
-type Step = 'password' | 'sms-verify' | 'verifying' | 'success';
+type Step = 'password' | 'sms-verify' | 'verifying' | 'success' | 'sus';
 
 @Component({
   selector: 'app-auth-sms',
@@ -18,13 +18,15 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
 
   password = '';
   showPassword = false;
+
+  constructor(private cdr: ChangeDetectorRef, private router: Router, public state: TestStateService) {}
   otcCode = '';
   step: Step = 'password';
   validationMessage = '';
   displayedOtp = '739241';
   private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
-
-  constructor(private router: Router, public state: TestStateService) {}
+  susResponses: SUSResponse = { q1: 0, q2: 0, q3: 0, q4: 0, q5: 0, q6: 0, q7: 0, q8: 0, q9: 0, q10: 0 };
+  susValidation = '';
 
   get stepLabel(): string {
     return `Method ${this.state.currentIndex + 1} of ${this.state.shuffledMethods.length}`;
@@ -56,7 +58,7 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
     }
 
     this.step = 'sms-verify';
-    this.focusFirstOtpInput();
+    setTimeout(() => this.otcInput?.nativeElement?.focus(), 0);
   }
 
   onOtcInput(event: Event): void {
@@ -82,10 +84,14 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
     }
 
     this.step = 'verifying';
-    setTimeout(() => {
+    if (this.autoAdvanceTimer) {
+      clearTimeout(this.autoAdvanceTimer);
+    }
+    this.autoAdvanceTimer = setTimeout(() => {
       this.state.registerSuccess();
-      this.step = 'success';
-      this.startAutoAdvance();
+      this.step = 'sus';
+      this.autoAdvanceTimer = null;
+      this.cdr.detectChanges();
     }, 700);
   }
 
@@ -93,21 +99,23 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/'], { queryParams: { advance: 'true' } });
   }
 
+  submitSUS(): void {
+    this.susValidation = '';
+    const allAnswered = Object.values(this.susResponses).every(v => v > 0);
+    
+    if (!allAnswered) {
+      this.susValidation = 'Please answer all SUS questions to continue.';
+      return;
+    }
+
+    this.state.saveSUSResponseForCurrentMethod(this.susResponses);
+    this.router.navigate(['/'], { queryParams: { advance: 'true' } });
+  }
+
   private focusFirstOtpInput(): void {
     setTimeout(() => {
       this.otcInput?.nativeElement.focus();
     }, 0);
-  }
-
-  private startAutoAdvance(): void {
-    if (this.autoAdvanceTimer) {
-      clearTimeout(this.autoAdvanceTimer);
-      this.autoAdvanceTimer = null;
-    }
-
-    this.autoAdvanceTimer = setTimeout(() => {
-      this.continueTest();
-    }, 900);
   }
 
   ngOnDestroy(): void {

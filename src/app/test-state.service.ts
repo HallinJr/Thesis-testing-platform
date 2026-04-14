@@ -15,6 +15,20 @@ export interface AttemptLog {
   methodName: string;
   completionTimeMs: number;
   attempts: number;
+  sus?: SUSResponse;
+}
+
+export interface SUSResponse {
+  q1: number;
+  q2: number;
+  q3: number;
+  q4: number;
+  q5: number;
+  q6: number;
+  q7: number;
+  q8: number;
+  q9: number;
+  q10: number;
 }
 
 export interface SessionLog {
@@ -119,6 +133,12 @@ export class TestStateService {
     return log;
   }
 
+  saveSUSResponseForCurrentMethod(sus: SUSResponse): void {
+    if (this.attemptsThisSession.length > 0) {
+      this.attemptsThisSession[this.attemptsThisSession.length - 1].sus = sus;
+    }
+  }
+
   advance(): void {
     if (this.currentIndex < this.shuffledMethods.length - 1) {
       this.currentIndex++;
@@ -146,21 +166,39 @@ export class TestStateService {
   }
 
   exportCsv(): string {
-    const sessions = this.readStoredSessions();
+    const susHeaders = ['SUS_Q1', 'SUS_Q2', 'SUS_Q3', 'SUS_Q4', 'SUS_Q5', 'SUS_Q6', 'SUS_Q7', 'SUS_Q8', 'SUS_Q9', 'SUS_Q10'];
     const headers = [
       'participantId',
       'methodName',
       'completionTimeMs',
-      'attempts'
+      'attempts',
+      ...susHeaders
     ];
 
+    const sessions = this.readStoredSessions();
     const rows = sessions.flatMap((session) =>
-      session.attempts.map((attempt) => [
-        attempt.participantId,
-        attempt.methodName,
-        attempt.completionTimeMs,
-        attempt.attempts
-      ])
+      session.attempts.map((attempt) => {
+        const susValues = attempt.sus ? [
+          attempt.sus.q1,
+          attempt.sus.q2,
+          attempt.sus.q3,
+          attempt.sus.q4,
+          attempt.sus.q5,
+          attempt.sus.q6,
+          attempt.sus.q7,
+          attempt.sus.q8,
+          attempt.sus.q9,
+          attempt.sus.q10
+        ] : Array(10).fill('');
+        
+        return [
+          attempt.participantId,
+          attempt.methodName,
+          attempt.completionTimeMs,
+          attempt.attempts,
+          ...susValues
+        ];
+      })
     );
 
     return [headers, ...rows]
@@ -169,10 +207,13 @@ export class TestStateService {
   }
 
   exportJson(): string {
-    const logs = this.readStoredSessions().flatMap((session) => session.attempts);
+    const sessions = this.readStoredSessions();
     const payload = {
       exportedAt: new Date().toISOString(),
-      logs
+      sessions: sessions.map((session) => ({
+        savedAt: session.savedAt,
+        attempts: session.attempts
+      }))
     };
 
     return JSON.stringify(payload, null, 2);

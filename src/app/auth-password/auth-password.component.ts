@@ -1,10 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TestStateService } from '../test-state.service';
+import { TestStateService, SUSResponse } from '../test-state.service';
 
-type Step = 'form' | 'loading' | 'success';
+type Step = 'form' | 'loading' | 'success' | 'sus';
 
 @Component({
   selector: 'app-auth-password',
@@ -18,9 +18,12 @@ export class AuthPasswordComponent implements OnInit, OnDestroy {
   step: Step = 'form';
   showPassword = false;
   validationMessage = '';
-  private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private router: Router, public state: TestStateService) {}
+  constructor(private cdr: ChangeDetectorRef, private router: Router, public state: TestStateService) {}
+  
+  private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
+  susResponses: SUSResponse = { q1: 0, q2: 0, q3: 0, q4: 0, q5: 0, q6: 0, q7: 0, q8: 0, q9: 0, q10: 0 };
+  susValidation = '';
 
   get stepLabel(): string {
     return `Method ${this.state.currentIndex + 1} of ${this.state.shuffledMethods.length}`;
@@ -52,10 +55,14 @@ export class AuthPasswordComponent implements OnInit, OnDestroy {
     }
 
     this.step = 'loading';
-    setTimeout(() => {
+    if (this.autoAdvanceTimer) {
+      clearTimeout(this.autoAdvanceTimer);
+    }
+    this.autoAdvanceTimer = setTimeout(() => {
       this.state.registerSuccess();
-      this.step = 'success';
-      this.startAutoAdvance();
+      this.step = 'sus';
+      this.autoAdvanceTimer = null;
+      this.cdr.detectChanges();
     }, 700);
   }
 
@@ -73,15 +80,17 @@ export class AuthPasswordComponent implements OnInit, OnDestroy {
     this.state.registerInteraction();
   }
 
-  private startAutoAdvance(): void {
-    if (this.autoAdvanceTimer) {
-      clearTimeout(this.autoAdvanceTimer);
-      this.autoAdvanceTimer = null;
+  submitSUS(): void {
+    this.susValidation = '';
+    const allAnswered = Object.values(this.susResponses).every(v => v > 0);
+    
+    if (!allAnswered) {
+      this.susValidation = 'Please answer all SUS questions to continue.';
+      return;
     }
 
-    this.autoAdvanceTimer = setTimeout(() => {
-      this.continueTest();
-    }, 900);
+    this.state.saveSUSResponseForCurrentMethod(this.susResponses);
+    this.router.navigate(['/'], { queryParams: { advance: 'true' } });
   }
 
   ngOnDestroy(): void {
