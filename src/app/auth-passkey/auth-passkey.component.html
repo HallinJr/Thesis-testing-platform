@@ -14,27 +14,54 @@
 
     @if (step === 'pin') {
       <div class="otp-modal-backdrop">
-        <div class="otp-modal" role="dialog" aria-modal="true" aria-label="Popup för lokal PIN-kod">
-          <h2>Ange lokal PIN-kod</h2>
-          <p class="hint">Ange samma 4-siffriga PIN-kod som valdes i sessionsinställningarna.</p>
-          <div class="field">
-            <label for="passkey-pin">Passkey-PIN</label>
-            <input
-              #pinInput
-              id="passkey-pin"
-              type="text"
-              inputmode="numeric"
-              maxlength="4"
-              [(ngModel)]="pinCode"
-              (ngModelChange)="onPinChange($event)"
-              placeholder="Ange 4 siffror"
-              autocomplete="one-time-code"
-            />
+        <div
+          class="otp-modal windows-pin-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="windows-pin-title"
+          aria-describedby="windows-pin-desc"
+        >
+          <div class="window-titlebar">
+            <span class="window-shield" aria-hidden="true">🛡️</span>
+            <span class="window-title">Windows Security</span>
           </div>
+
+          <div class="window-body">
+            <h2 id="windows-pin-title">Enter your PIN</h2>
+            <p id="windows-pin-desc" class="hint">PIN</p>
+
+            <div class="windows-pin-input-row">
+              <div class="pin-keypad-icon" aria-hidden="true">
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
+              </div>
+
+              <div class="field windows-pin-field">
+                <label class="sr-only" for="passkey-pin">PIN</label>
+                <input
+                  #pinInput
+                  id="passkey-pin"
+                  type="password"
+                  inputmode="numeric"
+                  maxlength="4"
+                  [(ngModel)]="pinCode"
+                  (ngModelChange)="onPinChange($event)"
+                  placeholder="PIN"
+                  autocomplete="one-time-code"
+                />
+              </div>
+            </div>
+          </div>
+
           @if (validationMessage) {
             <p class="error-msg">{{ validationMessage }}</p>
           }
-          <button class="btn btn-primary" (click)="submitPin()">Bekräfta PIN-kod</button>
+
+          <div class="window-actions">
+            <button class="btn btn-secondary" type="button" (click)="cancelPinEntry()">Avbryt</button>
+            <button class="btn btn-primary" type="button" (click)="submitPin()">OK</button>
+          </div>
         </div>
       </div>
     }

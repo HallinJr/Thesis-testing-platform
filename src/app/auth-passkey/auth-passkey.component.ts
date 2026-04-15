@@ -93,6 +93,13 @@ export class AuthPasskeyComponent implements OnInit, OnDestroy {
     }, 700);
   }
 
+  cancelPinEntry(): void {
+    this.state.registerInteraction();
+    this.validationMessage = '';
+    this.pinCode = '';
+    this.step = 'select';
+  }
+
   continueTest(): void {
     this.router.navigate(['/'], { queryParams: { advance: 'true' } });
   }
