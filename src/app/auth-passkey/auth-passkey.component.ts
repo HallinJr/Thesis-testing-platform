@@ -109,6 +109,13 @@ export class AuthPasskeyComponent implements OnInit, OnDestroy {
     this.router.navigate(['/'], { queryParams: { advance: 'true' } });
   }
 
+  skipMethod(): void {
+    this.state.markCurrentMethodAsSkipped();
+    this.validationMessage = '';
+    this.pinCode = '';
+    this.step = 'sus';
+  }
+
   private focusFirstPinInput(): void {
     setTimeout(() => {
       this.pinInput?.nativeElement.focus();

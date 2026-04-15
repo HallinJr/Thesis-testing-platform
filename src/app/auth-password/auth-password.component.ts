@@ -84,6 +84,12 @@ export class AuthPasswordComponent implements OnInit, OnDestroy {
     this.router.navigate(['/'], { queryParams: { advance: 'true' } });
   }
 
+  skipMethod(): void {
+    this.state.markCurrentMethodAsSkipped();
+    this.validationMessage = '';
+    this.step = 'sus';
+  }
+
   ngOnDestroy(): void {
     if (this.autoAdvanceTimer) {
       clearTimeout(this.autoAdvanceTimer);

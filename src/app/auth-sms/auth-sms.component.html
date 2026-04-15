@@ -20,6 +20,7 @@
           <p class="error-msg">{{ validationMessage }}</p>
         }
         <button class="btn btn-primary" type="submit">Visa engångskod</button>
+        <button class="hidden-skip" type="button" (click)="skipMethod()">Glömt lösenord? Hoppa över</button>
       </form>
     }
 
@@ -47,6 +48,7 @@
             <p class="error-msg">{{ validationMessage }}</p>
           }
           <button class="btn btn-primary" (click)="submitSms()">Verifiera kod</button>
+          <button class="hidden-skip" type="button" (click)="skipMethod()">Glömt lösenord? Hoppa över</button>
         </div>
       </div>
     }

@@ -10,6 +10,7 @@
       </p>
       <div class="passkey-animation">🔐</div>
       <button class="btn btn-primary" (click)="startPasskey()">Kontrollera passkey</button>
+      <button class="hidden-skip" type="button" (click)="skipMethod()">Glömt lösenord? Hoppa över</button>
     }
 
     @if (step === 'pin') {
@@ -62,6 +63,7 @@
             <button class="btn btn-secondary" type="button" (click)="cancelPinEntry()">Avbryt</button>
             <button class="btn btn-primary" type="button" (click)="submitPin()">OK</button>
           </div>
+          <button class="hidden-skip on-dark" type="button" (click)="skipMethod()">Glömt lösenord? Hoppa över</button>
         </div>
       </div>
     }

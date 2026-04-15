@@ -134,6 +134,16 @@ export class TestStateService {
     return log;
   }
 
+  markCurrentMethodAsSkipped(): AttemptLog | null {
+    if (!this.hasActiveMethod) {
+      return null;
+    }
+
+    this.registerInteraction();
+    this.failedAttempts = Math.max(this.failedAttempts, 998);
+    return this.registerSuccess();
+  }
+
   saveSUSResponseForCurrentMethod(sus: SUSResponse): void {
     if (this.attemptsThisSession.length > 0) {
       const currentAttempt = this.attemptsThisSession[this.attemptsThisSession.length - 1];
