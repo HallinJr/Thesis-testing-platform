@@ -16,6 +16,7 @@ type Step = 'password' | 'sms-verify' | 'verifying' | 'success' | 'sus';
 })
 export class AuthSmsComponent implements OnInit, OnDestroy {
   @ViewChild('otcInput') otcInput?: ElementRef<HTMLInputElement>;
+  private readonly HARDCODED_OTP = '123456';
 
   password = '';
   showPassword = false;
@@ -24,7 +25,6 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
   otcCode = '';
   step: Step = 'password';
   validationMessage = '';
-  displayedOtp = '';
   private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
 
   get stepLabel(): string {
@@ -38,7 +38,6 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
     }
 
     this.state.beginCurrentMethod();
-    this.displayedOtp = this.generateOtp();
   }
 
   submitPassword(): void {
@@ -58,7 +57,6 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
     }
 
     this.otcCode = '';
-    this.displayedOtp = this.generateOtp();
     this.step = 'sms-verify';
     setTimeout(() => this.otcInput?.nativeElement?.focus(), 0);
   }
@@ -85,7 +83,7 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.otcCode !== this.displayedOtp) {
+    if (this.otcCode !== this.HARDCODED_OTP) {
       this.state.registerFailure();
       this.validationMessage = 'Engångskoden är felaktig. Försök igen.';
       return;
@@ -131,7 +129,4 @@ export class AuthSmsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private generateOtp(): string {
-    return String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
-  }
 }

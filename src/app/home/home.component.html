@@ -28,12 +28,17 @@
         <label for="sessionPassword">Sessionslösenord</label>
         <input
           id="sessionPassword"
-          type="text"
+          type="password"
           [(ngModel)]="sessionPasswordInput"
+          (input)="trackPasswordInput()"
           name="sessionPassword"
-          placeholder="Välj lösenordet som ska användas i uppgifterna"
-          autocomplete="off"
+          placeholder="Minst 8 tecken inkl. stor och liten bokstav, siffra, specialtecken"
+          autocomplete="new-password"
         />
+        <p class="field-hint">Exempel: Test!2026</p>
+        @if (sessionPasswordError) {
+          <p class="field-error">{{ sessionPasswordError }}</p>
+        }
       </div>
 
       <div class="field">
@@ -42,12 +47,16 @@
           id="sessionPasskeyPin"
           type="text"
           [(ngModel)]="sessionPasskeyPinInput"
+          (input)="trackPinInput()"
           name="sessionPasskeyPin"
           maxlength="4"
           inputmode="numeric"
           placeholder="Välj en 4-siffrig passkey-PIN"
           autocomplete="off"
         />
+        @if (sessionPasskeyPinError) {
+          <p class="field-error">{{ sessionPasskeyPinError }}</p>
+        }
       </div>
 
       <!-- <div class="field">

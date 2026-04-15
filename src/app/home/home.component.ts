@@ -15,6 +15,8 @@ export class HomeComponent implements OnInit {
   participantIdInput = '';
   sessionPasswordInput = '';
   sessionPasskeyPinInput = '';
+  sessionPasswordError = '';
+  sessionPasskeyPinError = '';
   clearStorageOnStart = false;
   private jsonFileHandle: any | null = null;
 
@@ -29,12 +31,47 @@ export class HomeComponent implements OnInit {
   }
 
   startTest(): void {
+    const password = this.sessionPasswordInput.trim();
+    const pin = this.sessionPasskeyPinInput.trim();
+
+    this.sessionPasswordError = '';
+    this.sessionPasskeyPinError = '';
+
+    if (!this.isSecurePassword(password)) {
+      this.sessionPasswordError = 'Lösenordet måste vara minst 8 tecken och innehålla stor och liten bokstav, siffra och specialtecken.';
+    }
+
+    if (!/^\d{4}$/.test(pin)) {
+      this.sessionPasskeyPinError = 'Passkey-PIN måste vara exakt 4 siffror.';
+    }
+
+    if (this.sessionPasswordError || this.sessionPasskeyPinError) {
+      return;
+    }
+
     if (this.clearStorageOnStart) {
       this.state.clearStoredData();
     }
 
-    this.state.startTest(this.participantIdInput, this.sessionPasswordInput, this.sessionPasskeyPinInput);
+    this.state.startTest(this.participantIdInput, password, pin);
     this.state.beginCurrentMethod();
+  }
+
+  trackPasswordInput(): void {
+    if (!this.sessionPasswordError) {
+      return;
+    }
+
+    if (this.isSecurePassword(this.sessionPasswordInput.trim())) {
+      this.sessionPasswordError = '';
+    }
+  }
+
+  trackPinInput(): void {
+    this.sessionPasskeyPinInput = this.sessionPasskeyPinInput.replace(/\D/g, '').slice(0, 4);
+    if (this.sessionPasskeyPinError && /^\d{4}$/.test(this.sessionPasskeyPinInput)) {
+      this.sessionPasskeyPinError = '';
+    }
   }
 
   clearStoredDataNow(): void {
@@ -104,6 +141,12 @@ export class HomeComponent implements OnInit {
     this.participantIdInput = '';
     this.sessionPasswordInput = '';
     this.sessionPasskeyPinInput = '';
+    this.sessionPasswordError = '';
+    this.sessionPasskeyPinError = '';
     this.state.reset();
+  }
+
+  private isSecurePassword(value: string): boolean {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(value);
   }
 }
