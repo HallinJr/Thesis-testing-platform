@@ -15,5 +15,5 @@ export const SUS_QUESTIONS: SusQuestion[] = [
   { key: 'q7', text: 'Jag tror att de flesta snabbt skulle kunna lära sig att använda den här autentiseringsmetoden.' },
   { key: 'q8', text: 'Jag upplevde den här autentiseringsmetoden som besvärlig att använda.' },
   { key: 'q9', text: 'Jag kände mig trygg i att använda den här autentiseringsmetoden.' },
-  { key: 'q10', text: 'Jag behövde lära mig mycket innan jag kunde börja använda den här autentiseringsmetoden.' }
+  { key: 'q10', text: 'Jag behövde lära mig en del saker innan jag kunde börja använda den här autentiseringsmetoden.' }
 ];

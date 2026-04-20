@@ -16,7 +16,7 @@ type Step = 'password' | 'sms-verify' | 'verifying' | 'success' | 'sus';
 })
 export class AuthSmsComponent implements OnInit, OnDestroy {
   @ViewChild('otcInput') otcInput?: ElementRef<HTMLInputElement>;
-  private readonly HARDCODED_OTP = '123456';
+  private readonly HARDCODED_OTP = '137926';
 
   password = '';
   showPassword = false;
