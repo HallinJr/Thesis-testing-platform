@@ -121,36 +121,6 @@
       <h2>Session slutförd</h2>
       <p>Alla tre metoder är genomförda och loggade.</p>
 
-      <div class="session-meta">
-        <p><strong>Deltagare:</strong> {{ state.participantId }}</p>
-        <p><strong>Session:</strong> {{ state.sessionId }}</p>
-        <p><strong>Sessionslösenord:</strong> {{ state.sessionPassword }}</p>
-        <p><strong>Passkey-PIN:</strong> {{ state.sessionPasskeyPin }}</p>
-      </div>
-
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Deltagar-ID</th>
-            <th>Metod</th>
-            <th>Genomförandetid (ms)</th>
-            <th>Försök</th>
-            <th>SUS-poäng</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (attempt of state.currentSessionAttempts; track $index) {
-            <tr>
-              <td>{{ attempt.participantId }}</td>
-              <td>{{ attempt.methodName }}</td>
-              <td>{{ attempt.completionTimeMs }}</td>
-              <td>{{ attempt.attempts }}</td>
-              <td>{{ attempt.susScore ?? '-' }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-
       <div class="actions">
         <button class="btn btn-secondary" (click)="downloadCsv()">Exportera CSV</button>
         <button class="btn btn-secondary" (click)="downloadJson()">Exportera JSON (spara fil)</button>
